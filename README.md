@@ -1,5 +1,5 @@
 # DetectEval
-This is the repo for data and code for NeurIPS 2024 Datasets and Benchmarks Track submission paper "DetectEval: Benchmarking LLM-Generated Text Detection in Real-World Scenarios"
+This is the repo for data and code for submission paper "DetectEval: Benchmarking LLM-Generated Text Detection in Real-World Scenarios"
 
 ---
 

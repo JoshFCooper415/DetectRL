@@ -1,5 +1,5 @@
 <div align=center>
-<img src="image/detectrl-svg.svg" width="450px">
+<img src="image/detectrl-svg.svg" width="200px">
 </div>
 <h2 align="center"> <a href="https://arxiv.org/abs/2406.18522">[NeurIPS D&B 2024] DetectRL: Benchmarking LLM-Generated Text Detection in Real-World Scenarios </a></h2>
 
@@ -38,7 +38,8 @@ Previous and current popular detection benchmarks, such as TuringBench , MGTBenc
 | **M4**                 | ✓             | ✓          | ✓               | -          | -              | -           | ✓                       | -               | -           | -                        |
 | **MAGE**               | ✓             | ✓          | -               | ⃝          | -              | -           | ✓                       | -               | -           | -                        |
 | **DetectRL (Ours)**    | ✓             | ✓          | ✓               | ✓          | ✓              | ✓           | ✓                       | ✓               | ✓           | ✓                        |
-Note: Comparison with existing benchmarks. $\checkmark$: benchmark evaluates this scenario. $\triangle$: has studies, not in evaluation. $\bigcirc$: similar scenario exist, but not fully based on real-world usage.
+
+❗Note: Comparison with existing benchmarks. $\checkmark$: benchmark evaluates this scenario. $\triangle$: has studies, not in evaluation. $\bigcirc$: similar scenario exist, but not fully based on real-world usage.
 
 
 ## 🏆 LeaderBoard
@@ -60,6 +61,7 @@ Note: Comparison with existing benchmarks. $\checkmark$: benchmark evaluates thi
 | **NPR**              | 48.37        | 41.41 | 47.27     | 40.04 | 53.49        | 45.22 | 38.58                 | 38.83              | 36.10                 | 37.60      | 42.17     | 80.03         | 75.98 | 48.08 |
 | **DetectGPT**        | 34.43        | 21.52 | 34.93     | 14.80 | 36.19        | 19.15 | 11.54                 | 13.11              | 11.84                 | 35.78      | 34.69     | 60.86         | 48.76 | 29.05 |
 | **Entropy**          | 46.02        | 27.40 | 46.97     | 34.25 | 43.75        | 24.69 | 25.06                 | 31.07              | 16.53                 | 13.38      | 15.99     | 22.39         | 16.60 | 28.01 |
+
 ## ⚙️ Data and Experimental Reproduction
 
 ### Data Loading and Processing

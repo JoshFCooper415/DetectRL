@@ -11,13 +11,16 @@ fixed_label = {
     "LRR": "LRR",
     "NPR": "NPR",
     "DetectGPT": "DetectGPT",
-    "Fast_DetectGPT": "Fast_DetectGPT",
+    "dna_gpt": "DNA-GPT",
+    "revise": "Revise-Detect.",
+    "bino": "Binoculars",
+    "Fast_DetectGPT": "Fast-DetectGPT",
     "RoB-Base": "RoB-Base",
     "X-RoB-Base": "X-RoB-Base"
 }
 
 data = {}
-for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast_DetectGPT", "RoB-Base", "X-RoB-Base"]:
+for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "dna_gpt", "revise", "bino", "Fast_DetectGPT", "RoB-Base", "X-RoB-Base"]:
     res = []
     for length in ['20', '40', '60', '80', '100', '120', '140', '160', '180', '200', '220', '240', '260', '280', '300', '320', '340', '360']:
         if "RoB-Base" == metric:
@@ -35,10 +38,13 @@ for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast
     data[metric] = res
     print(f"{metric}: {sum(res)/len(res)}")
 
-colors = sns.color_palette("pastel", len(data))
+colors = sns.color_palette("husl", len(data))
 
-colors = ["#934B43", "#D76364", "#EF7A6D", "#F1D77E", "#B1CE46", "#63E398", "#9394E7", "#5F97D2", "#9DC3E7"]
-markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*']
+markers = [
+    'o', 's', 'D', '^', 'v',
+    '<', '>', 'p', '*',
+    'X', 'H', 'P'  # New markers
+]
 
 x = range(len(data['likelihood']))
 
@@ -54,11 +60,11 @@ plt.xticks(ticks=x, labels=[x_labels[i] if i % 3 == 0 else '' for i in range(len
 plt.yticks(fontsize=14)
 plt.ylim(0, 1.0)
 plt.xlabel('Text Length', fontsize=14)
-plt.ylabel('Detection AUROC', fontsize=14)
-plt.title('Training-Time', fontsize=14)
+plt.ylabel('AUROC', fontsize=14)
+plt.title('(a) Training-Time', fontsize=14)
 
 data = {}
-for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast_DetectGPT", "RoB-Base", "X-RoB-Base"]:
+for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "dna_gpt", "revise", "bino", "Fast_DetectGPT", "RoB-Base", "X-RoB-Base"]:
     res = []
     for length in ['20', '40', '60', '80', '100', '120', '140', '160', '180', '200', '220', '240', '260', '280', '300', '320', '340', '360']:
         if "RoB-Base" == metric:
@@ -84,15 +90,15 @@ for metric in ["likelihood", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast
     plt.yticks(fontsize=14)
     plt.ylim(0, 1.0)
     plt.xlabel('Text Length', fontsize=14)
-    plt.title('Test-Time', fontsize=14)
+    plt.title('(b) Test-Time', fontsize=14)
 
-    plt.subplots_adjust(bottom=0.32, wspace=0.4)
+    # plt.subplots_adjust(bottom=0.32, wspace=0.4)
 
     # shared legend
     lines, labels = plt.subplot(1, 2, 1).get_legend_handles_labels()
-    plt.figlegend(lines, labels, loc='lower center', ncol=5, bbox_to_anchor=(0.5, -0.05), fontsize=14)
+    plt.figlegend(lines, labels, loc='lower center', ncol=6, bbox_to_anchor=(0.5, -0.01), fontsize=11)
 
-    plt.subplots_adjust(hspace = 0.3 ,wspace=0.3, top=0.9, bottom=0.3)
+    plt.subplots_adjust(hspace = 0.2 ,wspace=0.2, top=0.9, bottom=0.37)
 
     plt.savefig('training_time_test_time_text_length_impact.pdf')
     plt.show()

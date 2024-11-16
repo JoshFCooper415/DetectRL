@@ -59,6 +59,27 @@ data_list = [
             [0.0019, 0.0000, 0.0000, 0.0118],
             [0.5628, 0.5774, 0.0865, 0.6908],
         ]),
+    # DNA-GPT
+    np.array([
+        [0.5504, 0.6418, 0.3449, 0.6541],
+        [0.4517, 0.6077, 0.2280, 0.6403],
+        [0.4703, 0.6109, 0.2567, 0.6460],
+        [0.3409, 0.5548, 0.1463, 0.6289],
+    ]),
+    # Revise-Detect.
+    np.array([
+        [0.6272, 0.6198, 0.3166, 0.6689],
+        [0.5594, 0.5903, 0.2546, 0.6280],
+        [0.5782, 0.5960, 0.2728, 0.6358],
+        [0.6101, 0.6090, 0.2994, 0.6587],
+    ]),
+    # Binoculars
+    np.array([
+        [0.8250, 0.8797, 0.3879, 0.9182],
+        [0.7702, 0.8820, 0.3135, 0.9087],
+        [0.8249, 0.8805, 0.3935, 0.9178],
+        [0.8068, 0.8780, 0.3462, 0.9230],
+    ]),
     # Roberta
     np.array([
             [0.9997, 0.7034, 0.6290, 0.9468],
@@ -88,7 +109,7 @@ data_list = [
             [0.9754, 0.9443, 0.8176, 0.9521],
             [0.8048, 0.7055, 0.8424, 0.7862],
             [0.9812, 0.8135, 0.7422, 0.9767],
-        ]),
+        ])
 ]
 
 rows = ['GPT3.5', 'PaLM2', 'Claude', 'Llama2']
@@ -96,11 +117,12 @@ cols = ['GPT3.5', 'PaLM2', 'Claude', 'Llama2']
 
 cmap = plt.get_cmap('RdPu')
 
-titles = ['Likihood', 'Entropy', 'Rank', 'LogRank', 'LRR',
-          'NPR', 'DetectGPT', 'Fast-DetectGPT', 'Rob-Base', 'X-Rob-Base']
+titles = ['Likihood', 'Rank', 'LogRank', 'LRR',
+          'NPR', 'DetectGPT', 'Fast-DetectGPT', 'DNA-GPT',
+          'Revise-Detect.', 'Binoculars', 'Rob-Base', 'X-Rob-Base']
 
-fig, axes = plt.subplots(2, 5, figsize=(25, 8))  # figsize可以根据需要进行调整
-fig.tight_layout(pad=3.0)
+fig, axes = plt.subplots(3, 4, figsize=(18, 12))  # figsize可以根据需要进行调整
+fig.tight_layout(pad=2.0)
 
 for i, ax in enumerate(axes.flatten()):
     sns.heatmap(data_list[i], annot=True, linewidths=.5, cmap=cmap,

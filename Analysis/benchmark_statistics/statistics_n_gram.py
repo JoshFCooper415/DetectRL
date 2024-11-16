@@ -1,5 +1,5 @@
 from collections import Counter
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, ticker
 import json
 
 
@@ -236,12 +236,12 @@ data_mixing_list = [len(data_mixing_unigram_counter.keys()), len(data_mixing_big
 
 human_list = [len(human_unigram_counter.keys()), len(human_bigram_counter.keys()), len(human_trigram_counter.keys())]
 
-datasets = ['Unigram', 'Bigram', 'Trigram']
+datasets = ['Uni.', 'Bigram', 'Tri.']
 
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 15})
 
 # 创建一个更大的图和三个子图
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 3), sharey=True)  # 这里的figsize可以根据需要调整
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 2.4), sharey=True)  # 这里的figsize可以根据需要调整
 
 # 设置一些通用的参数
 bar_width = 0.15
@@ -256,44 +256,47 @@ ax1.bar([p + bar_width * 2 for p in index], writing_list, bar_width, alpha=opaci
 ax1.bar([p + bar_width * 3 for p in index], review_list, bar_width, alpha=opacity, color='#82B0D2', label='Review')
 
 ax1.set_xlabel('')
-ax1.set_ylabel('Counts')
-ax1.set_ylim(0, 250000)
-ax1.set_title('N-Gram Distribution in Multi-Domain', fontsize=14)
+ax1.set_ylabel('Counts', rotation=90)
+ax1.set_ylim(0, 500000)
+ax1.set_title('Multi-Domain', fontsize=15)
 ax1.set_xticks([p + bar_width * 1.5 for p in index])
 ax1.set_xticklabels(datasets)
-ax1.legend(fontsize=10)
+ax1.legend(fontsize=11, framealpha=0.2)
+ax1.tick_params(axis='y', labelrotation=90)
+ax1.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}K'.format(x*1e-3)))
 
 # 第二个子图
-ax2.bar(index, ChatGPT_list, bar_width, alpha=opacity, color='#8ECFC9', label='ChatGPT')
+ax2.bar(index, ChatGPT_list, bar_width, alpha=opacity, color='#8ECFC9', label='GPT-3.5')
 ax2.bar([p + bar_width for p in index], Claude_list, bar_width, alpha=opacity, color='#FFBE7A', label='Claude')
-ax2.bar([p + bar_width * 2 for p in index], PaLM_list, bar_width, alpha=opacity, color='#FA7F6F', label='PaLM')
-ax2.bar([p + bar_width * 3 for p in index], Llama_list, bar_width, alpha=opacity, color='#82B0D2', label='Llama')
+ax2.bar([p + bar_width * 2 for p in index], PaLM_list, bar_width, alpha=opacity, color='#FA7F6F', label='PaLM-2')
+ax2.bar([p + bar_width * 3 for p in index], Llama_list, bar_width, alpha=opacity, color='#82B0D2', label='Llama-2')
 
-ax2.set_xlabel('Datasets')
+ax2.set_xlabel('N-Gram Distribution')
 ax2.set_ylabel('')
-ax2.set_ylim(0, 250000)
-ax2.set_title('N-Gram Distribution in Multi-LLM', fontsize=14)
+ax2.set_ylim(0, 500000)
+ax2.set_title('Multi-LLM', fontsize=15)
 ax2.set_xticks([p + bar_width * 1.5 for p in index])
 ax2.set_xticklabels(datasets)
-ax2.legend(fontsize=10)
+ax2.legend(fontsize=11, framealpha=0.2)
 
 # 第三个子图
-ax3.bar(index, direct_prompt_list, bar_width, alpha=opacity, color='#8ECFC9', label='Direct Prompt')
-ax3.bar([p + bar_width for p in index], prompt_attacks_list, bar_width, alpha=opacity, color='#FFBE7A', label='Prompt Attack')
-ax3.bar([p + bar_width * 2 for p in index], paraphrase_attacks_list, bar_width, alpha=opacity, color='#FA7F6F', label='Paraphrase Attack')
-ax3.bar([p + bar_width * 3 for p in index], perturbation_attacks_list, bar_width, alpha=opacity, color='#82B0D2', label='Perturbation Attack')
-ax3.bar([p + bar_width * 4 for p in index], data_mixing_list, bar_width, alpha=opacity, color='#BEB8DC', label='Data Mixing')
+ax3.bar(index, direct_prompt_list, bar_width, alpha=opacity, color='#8ECFC9', label='Direct')
+ax3.bar([p + bar_width for p in index], prompt_attacks_list, bar_width, alpha=opacity, color='#FFBE7A', label='Prompt')
+ax3.bar([p + bar_width * 2 for p in index], paraphrase_attacks_list, bar_width, alpha=opacity, color='#FA7F6F', label='Paraph.')
+ax3.bar([p + bar_width * 3 for p in index], perturbation_attacks_list, bar_width, alpha=opacity, color='#82B0D2', label='Perturb')
+ax3.bar([p + bar_width * 4 for p in index], data_mixing_list, bar_width, alpha=opacity, color='#BEB8DC', label='Mixing')
 ax3.bar([p + bar_width * 5 for p in index], human_list, bar_width, alpha=opacity, color='#FFC0CB', label='Human')
 
 ax3.set_xlabel('')
 ax3.set_ylabel('')
-ax3.set_ylim(0, 250000)
-ax3.set_title('N-Gram Distribution in Multi-Attack', fontsize=14)
+ax3.set_ylim(0, 500000)
+ax3.set_title('Multi-Attack', fontsize=15)
 ax3.set_xticks([p + bar_width * 2 for p in index])
 ax3.set_xticklabels(datasets)
-ax3.legend(fontsize=10)
+ax3.legend(fontsize=11, framealpha=0.2)
 
 # # 调整子图之间的间距和布局
 # plt.tight_layout(pad=3.0)
-plt.subplots_adjust(wspace=0.1, top=0.9, bottom=0.2)
+plt.subplots_adjust(left=0.07, right=0.99, wspace=0.05, top=0.88, bottom=0.25)
 plt.savefig("n_gram.pdf")
+plt.show()

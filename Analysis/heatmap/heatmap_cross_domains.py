@@ -59,6 +59,27 @@ data_list = [
             [0.3481, 0.3360, 0.6784, 0.6830],
             [0.4070, 0.3766, 0.6825, 0.7162],
         ]),
+    # DNA-GPT
+    np.array([
+        [0.5830, 0.4617, 0.4255, 0.6052],
+        [0.4322, 0.3751, 0.2772, 0.4323],
+        [0.6236, 0.4850, 0.5825, 0.7040],
+        [0.6109, 0.4774, 0.4774, 0.6928],
+    ]),
+    # Revise-Detect.
+    np.array([
+        [0.6422, 0.5005, 0.4821, 0.4708],
+        [0.5686, 0.4607, 0.3483, 0.3115],
+        [0.6472, 0.5113, 0.6429, 0.6271],
+        [0.6372, 0.5093, 0.6734, 0.6871],
+    ]),
+    # Binoculars
+    np.array([
+        [0.7677, 0.7221, 0.7991, 0.8328],
+        [0.7601, 0.7218, 0.7993, 0.8328],
+        [0.7269, 0.6955, 0.7973, 0.8132],
+        [0.7720, 0.7195, 0.7927, 0.8432],
+    ]),
     # Roberta
     np.array([
             [1.0000, 0.7590, 0.7768, 0.7069],
@@ -94,11 +115,12 @@ cols = ['arxiv', 'xsum', 'writing', 'review']
 
 cmap = plt.get_cmap('RdPu')
 
-titles = ['Likihood', 'Entropy', 'Rank', 'LogRank', 'LRR',
-          'NPR', 'DetectGPT', 'Fast-DetectGPT', 'Rob-Base', 'X-Rob-Base']
+titles = ['Likihood', 'Rank', 'LogRank', 'LRR',
+          'NPR', 'DetectGPT', 'Fast-DetectGPT', 'DNA-GPT',
+          'Revise-Detect.', 'Binoculars', 'Rob-Base', 'X-Rob-Base']
 
-fig, axes = plt.subplots(2, 5, figsize=(25, 8))
-fig.tight_layout(pad=3.0)
+fig, axes = plt.subplots(3, 4, figsize=(18, 12))  # figsize可以根据需要进行调整
+fig.tight_layout(pad=2.0)
 
 for i, ax in enumerate(axes.flatten()):
     sns.heatmap(data_list[i], annot=True, linewidths=.5, cmap=cmap,

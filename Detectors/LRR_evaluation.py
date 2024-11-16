@@ -5,13 +5,44 @@ import torch
 import tqdm
 import argparse
 import json
-from rank import get_rank
-from loss import get_ll
 from metrics import get_roc_metrics
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
+def get_rank(text, args, tokenizer, model, log=False):
+    with torch.no_grad():
+        if text == "":
+            return None
+        else:
+            tokenized = tokenizer(text, return_tensors="pt").to(args.DEVICE)
+            logits = model(**tokenized).logits[:, :-1]
+            labels = tokenized.input_ids[:, 1:]
+
+            matches = (logits.argsort(-1, descending=True) == labels.unsqueeze(-1)).nonzero()
+
+            assert matches.shape[1] == 3, f"Expected 3 dimensions in matches tensor, got {matches.shape}"
+
+            ranks, timesteps = matches[:, -1], matches[:, -2]
+
+            assert (timesteps == torch.arange(len(timesteps)).to(
+                timesteps.device)).all(), "Expected one match per timestep"
+
+            ranks = ranks.float() + 1
+            if log:
+                ranks = torch.log(ranks)
+
+            return ranks.float().mean().item()
+
+def get_ll(text, args, tokenizer, model):
+    with torch.no_grad():
+        tokenized = tokenizer(text, return_tensors="pt").to(args.DEVICE)
+        labels = tokenized['input_ids']
+        if labels.nelement() == 0:
+            logging.error(f"Empty input: {text}")
+            return 0
+        else:
+            return -model(**tokenized, labels=labels).loss.item()
 
 def experiment(args):
     # load model

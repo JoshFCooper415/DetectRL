@@ -20,9 +20,10 @@ def get_roc_metrics(real_preds, sample_preds):
     recall = recall_score(real_labels, predictions)
     f1 = f1_score(real_labels, predictions)
     accuracy = accuracy_score(real_labels, predictions)
+    tpr_at_fpr_0_01 = np.interp(0.01 / 100, fpr, tpr)
 
     return float(roc_auc), float(optimal_threshold), conf_matrix.tolist(), float(
-        precision), float(recall), float(f1), float(accuracy)
+        precision), float(recall), float(f1), float(accuracy), float(tpr_at_fpr_0_01)
 
 
 def get_metrics(real_preds, sample_preds, optimal_threshold):

@@ -5,12 +5,20 @@ import torch
 import tqdm
 import argparse
 import json
-from loss import get_ll
 from metrics import get_roc_metrics
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
+def get_ll(text, args, tokenizer, model):
+    with torch.no_grad():
+        tokenized = tokenizer(text, return_tensors="pt").to(args.DEVICE)
+        labels = tokenized['input_ids']
+        if labels.nelement() == 0:
+            logging.error(f"Empty input: {text}")
+            return 0
+        else:
+            return -model(**tokenized, labels=labels).loss.item()
 
 def truncate_text_to_sentences(text, min_word_count=100):
     word_count = 0

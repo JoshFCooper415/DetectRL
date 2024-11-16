@@ -136,47 +136,51 @@ for item in data_mixing:
     if item["label"] == "llm":
         data_mixing_list.append(lexical_diversity(item["text"]))
 
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 15})
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 3), sharey=True)
+fig, axes = plt.subplots(1, 3, figsize=(8, 2.4), sharey=True)
 
 # Plot comparison for Text Length Distribution - Domains
 sns.kdeplot(arxiv_list, color='#8ECFC9', label='ArXiv', ax=axes[0])
 sns.kdeplot(xsum_list, color='#FFBE7A', label='XSum', ax=axes[0])
 sns.kdeplot(writing_list, color='#FA7F6F', label='Writing', ax=axes[0])
 sns.kdeplot(review_list, color='#82B0D2', label='Review', ax=axes[0])
-axes[0].set_title('Lexical Diversity Distribution in Multi-Domain', fontsize=14)
+axes[0].set_title('Multi-Domain', fontsize=15)
 axes[0].set_xlabel('')
 axes[0].set_ylabel('Frequency')
 axes[0].set_xlim(0.0, 1.2)
 axes[0].set_ylim(0, 8)
-axes[0].legend(fontsize=10)
+axes[0].legend(fontsize=11, framealpha=0.2)
 
 # Plot comparison for Text Length Distribution - LLMs
-sns.kdeplot(ChatGPT_list, color='#8ECFC9', label='ChatGPT', ax=axes[1])
+sns.kdeplot(ChatGPT_list, color='#8ECFC9', label='GPT-3.5', ax=axes[1])
 sns.kdeplot(Claude_list, color='#FFBE7A', label='Claude', ax=axes[1])
-sns.kdeplot(PaLM_list, color='#FA7F6F', label='PaLM', ax=axes[1])
-sns.kdeplot(Llama_list, color='#82B0D2', label='Llama', ax=axes[1])
-axes[1].set_title('Lexical Diversity Distribution in Multi-LLM', fontsize=14)
-axes[1].set_xlabel('Lexical Diversity', fontsize=14)
+sns.kdeplot(PaLM_list, color='#FA7F6F', label='PaLM-2', ax=axes[1])
+sns.kdeplot(Llama_list, color='#82B0D2', label='Llama-2', ax=axes[1])
+axes[1].set_title('Multi-LLM', fontsize=15)
+axes[1].set_xlabel('Lexical Diversity Distribution', fontsize=15)
 axes[1].set_ylabel('')
 axes[1].set_xlim(0.0, 1.2)
 axes[1].set_ylim(0, 8)
-axes[1].legend(fontsize=10)
+axes[1].legend(fontsize=11, framealpha=0.2)
 
 # Plot comparison for Text Length Distribution - Attacks
-sns.kdeplot(direct_prompt_list, color='#8ECFC9', label='Direct Prompt', ax=axes[2])
-sns.kdeplot(prompt_attacks_list, color='#FFBE7A', label='Prompt Attack', ax=axes[2])
-sns.kdeplot(paraphrase_attacks_list, color='#FA7F6F', label='Paraphrase Attack', ax=axes[2])
-sns.kdeplot(perturbation_attacks_list, color='#82B0D2', label='Perturbation Attack', ax=axes[2])
-sns.kdeplot(data_mixing_list, color='#BEB8DC', label='Data Mixing', ax=axes[2])
+sns.kdeplot(direct_prompt_list, color='#8ECFC9', label='Direct', ax=axes[2])
+sns.kdeplot(prompt_attacks_list, color='#FFBE7A', label='Prompt', ax=axes[2])
+sns.kdeplot(paraphrase_attacks_list, color='#FA7F6F', label='Paraph.', ax=axes[2])
+sns.kdeplot(perturbation_attacks_list, color='#82B0D2', label='Perturb.', ax=axes[2])
+sns.kdeplot(data_mixing_list, color='#BEB8DC', label='Mixing', ax=axes[2])
 sns.kdeplot(human_list, color='#FFC0CB', label='Human', ax=axes[2])
-axes[2].set_title('Lexical Diversity Distribution in Multi-Attack', fontsize=14)
+axes[2].set_title('Multi-Attack', fontsize=15)
 axes[2].set_xlabel('')
 axes[2].set_ylabel('')
 axes[2].set_xlim(0.0, 1.2)
 axes[2].set_ylim(0, 8)
-axes[2].legend(fontsize=10)
+axes[2].legend(fontsize=11, framealpha=0.2)
 
-plt.subplots_adjust(wspace=0.1, top=0.9, bottom=0.2)
+plt.subplots_adjust(left=0.07, right=0.99, wspace=0.05, top=0.88, bottom=0.25)
+
+# save as lexical_diversity.pdf
 plt.savefig("lexical_diversity.pdf")
+
+plt.show()

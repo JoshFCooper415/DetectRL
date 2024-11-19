@@ -7,15 +7,17 @@
 
 If you like our project, please give us a star ⭐ on GitHub for the latest update.  </h2>
 
-<h5 align="center">
+</h5>
 
+<div align=center>
+  
 [![arXiv](https://img.shields.io/badge/Arxiv-2410.23746-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2410.23746) 
 [![Home Page](https://img.shields.io/badge/Project-DetectRL-blue.svg)](https://junchaoiu.github.io/DetectEval-Home/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/PKU-YuanGroup/ChronoMagic-Bench/blob/main/LICENSE)
 
-<div align="center">
 This repository is the official implementation of DetectRL, a benchmark for real-world LLM-generated text detection, covers multiple realistic scenarios, including usage of various prompts, human revisions of LLM-generated text, adversarial spelling errors, taking measures to attack detectors, etc., provide real utility to researchers on the topic and practitioners looking for consistent evaluation methods.
 </div>
+
 ---
 
 ## 📣 News

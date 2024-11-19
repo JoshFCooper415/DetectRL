@@ -15,7 +15,7 @@ If you like our project, please give us a star ⭐ on GitHub for the latest upda
 
 <div align="center">
 This repository is the official implementation of DetectRL, a benchmark for real-world LLM-generated text detection, covers multiple realistic scenarios, including usage of various prompts, human revisions of LLM-generated text, adversarial spelling errors, taking measures to attack detectors, etc., provide real utility to researchers on the topic and practitioners looking for consistent evaluation methods.
-
+</div>
 ---
 
 ## 📣 News

@@ -1,7 +1,7 @@
 <div align=center>
 <img src="image/detectrl-svg.svg" width="200px">
 </div>
-<h2 align="center"> <a href="https://arxiv.org/abs/2406.18522">[NeurIPS D&B 2024] DetectRL: Benchmarking LLM-Generated Text Detection in Real-World Scenarios </a></h2>
+<h2 align="center"> <a href="https://arxiv.org/abs/2410.23746">[NeurIPS D&B 2024] DetectRL: Benchmarking LLM-Generated Text Detection in Real-World Scenarios </a></h2>
 
 <h5 align="center"> 
 
@@ -13,7 +13,6 @@ If you like our project, please give us a star ⭐ on GitHub for the latest upda
   
 [![arXiv](https://img.shields.io/badge/Arxiv-2410.23746-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2410.23746) 
 [![Home Page](https://img.shields.io/badge/Project-DetectRL-blue.svg)](https://junchaoiu.github.io/DetectEval-Home/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/PKU-YuanGroup/ChronoMagic-Bench/blob/main/LICENSE)
 
 This repository is the official implementation of DetectRL, a benchmark for real-world LLM-generated text detection, covers multiple realistic scenarios, including usage of various prompts, human revisions of LLM-generated text, adversarial spelling errors, taking measures to attack detectors, etc., provide real utility to researchers on the topic and practitioners looking for consistent evaluation methods.
 </div>

@@ -1,4 +1,4 @@
-original_datasets_dir=
+original_datasets_dir="Benchmark/Original_Dataset"
 
 cd $original_datasets_dir
 

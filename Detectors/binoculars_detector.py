@@ -1,30 +1,24 @@
-from typing import Union
+from typing import Union, Optional
 import os
 import numpy as np
 import torch
 import transformers
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-import transformers
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
 
 ce_loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
 softmax_fn = torch.nn.Softmax(dim=-1)
 
-
 torch.set_grad_enabled(False)
 
 huggingface_config = {
-    # Only required for private models from Huggingface (e.g. LLaMA models)
     "TOKEN": os.environ.get("HF_TOKEN", None)
 }
 
-# selected using Falcon-7B and Falcon-7B-Instruct at bfloat16
-BINOCULARS_ACCURACY_THRESHOLD = 0.9015310749276843  # optimized for f1-score
-BINOCULARS_FPR_THRESHOLD = 0.8536432310785527  # optimized for low-fpr [chosen at 0.01%]
+BINOCULARS_ACCURACY_THRESHOLD = 4.4
+BINOCULARS_FPR_THRESHOLD = 5
 
 DEVICE_1 = "cuda:0" if torch.cuda.is_available() else "cpu"
 DEVICE_2 = "cuda:1" if torch.cuda.device_count() > 1 else DEVICE_1
-
 
 def assert_tokenizer_consistency(model_id_1, model_id_2):
     identical_tokenizers = (
@@ -34,62 +28,10 @@ def assert_tokenizer_consistency(model_id_1, model_id_2):
     if not identical_tokenizers:
         raise ValueError(f"Tokenizers are not identical for {model_id_1} and {model_id_2}.")
 
-
-def perplexity(encoding: transformers.BatchEncoding,
-               logits: torch.Tensor,
-               median: bool = False,
-               temperature: float = 1.0):
-    shifted_logits = logits[..., :-1, :].contiguous() / temperature
-    shifted_labels = encoding.input_ids[..., 1:].contiguous()
-    shifted_attention_mask = encoding.attention_mask[..., 1:].contiguous()
-
-    if median:
-        ce_nan = (ce_loss_fn(shifted_logits.transpose(1, 2), shifted_labels).
-                  masked_fill(~shifted_attention_mask.bool(), float("nan")))
-        ppl = np.nanmedian(ce_nan.cpu().float().numpy(), 1)
-
-    else:
-        ppl = (ce_loss_fn(shifted_logits.transpose(1, 2), shifted_labels) *
-               shifted_attention_mask).sum(1) / shifted_attention_mask.sum(1)
-        ppl = ppl.to("cpu").float().numpy()
-
-    return ppl
-
-
-def entropy(p_logits: torch.Tensor,
-            q_logits: torch.Tensor,
-            encoding: transformers.BatchEncoding,
-            pad_token_id: int,
-            median: bool = False,
-            sample_p: bool = False,
-            temperature: float = 1.0):
-    vocab_size = p_logits.shape[-1]
-    total_tokens_available = q_logits.shape[-2]
-    p_scores, q_scores = p_logits / temperature, q_logits / temperature
-
-    p_proba = softmax_fn(p_scores).view(-1, vocab_size)
-
-    if sample_p:
-        p_proba = torch.multinomial(p_proba.view(-1, vocab_size), replacement=True, num_samples=1).view(-1)
-
-    q_scores = q_scores.view(-1, vocab_size)
-
-    ce = ce_loss_fn(input=q_scores, target=p_proba).view(-1, total_tokens_available)
-    padding_mask = (encoding.input_ids != pad_token_id).type(torch.uint8)
-
-    if median:
-        ce_nan = ce.masked_fill(~padding_mask.bool(), float("nan"))
-        agg_ce = np.nanmedian(ce_nan.cpu().float().numpy(), 1)
-    else:
-        agg_ce = (((ce * padding_mask).sum(1) / padding_mask.sum(1)).to("cpu").float().numpy())
-
-    return agg_ce
-
-
 class Binoculars(object):
     def __init__(self,
-                 observer_name_or_path: str = "tiiuae/falcon-7b",
-                 performer_name_or_path: str = "tiiuae/falcon-7b-instruct",
+                 observer_name_or_path: str = "HuggingFaceTB/SmolLM-1.7B",
+                 performer_name_or_path: str = "HuggingFaceTB/SmolLM-135M-Instruct",
                  use_bfloat16: bool = True,
                  max_token_observed: int = 512,
                  mode: str = "low-fpr",
@@ -127,40 +69,164 @@ class Binoculars(object):
         else:
             raise ValueError(f"Invalid mode: {mode}")
 
-    def _tokenize(self, batch: list[str]) -> transformers.BatchEncoding:
-        batch_size = len(batch)
-        encodings = self.tokenizer(
-            batch,
-            return_tensors="pt",
-            padding="longest" if batch_size > 1 else False,
-            truncation=True,
-            max_length=self.max_token_observed,
-            return_token_type_ids=False).to(self.observer_model.device)
-        return encodings
+    @staticmethod
+    def apply_temperature(logits: torch.Tensor, temperature: float) -> torch.Tensor:
+        """Apply temperature scaling to logits."""
+        return logits / temperature
+
+    @staticmethod
+    def apply_top_k(probs: torch.Tensor, k: int) -> torch.Tensor:
+        """Apply top-k filtering to probability distribution."""
+        values, indices = torch.topk(probs, k=k)
+        filtered_probs = torch.zeros_like(probs)
+        filtered_probs.scatter_(-1, indices, values)
+        return filtered_probs
+
+    @staticmethod
+    def apply_top_p(probs: torch.Tensor, p: float) -> torch.Tensor:
+        """Apply nucleus (top-p) filtering to probability distribution."""
+        sorted_probs, sorted_indices = torch.sort(probs, descending=True)
+        cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+        
+        # Remove tokens with cumulative probability above the threshold
+        sorted_indices_to_remove = cumulative_probs > p
+        sorted_indices_to_remove[1:] = sorted_indices_to_remove[:-1].clone()
+        sorted_indices_to_remove[0] = False
+        
+        filtered_probs = torch.zeros_like(probs)
+        filtered_probs.scatter_(-1, sorted_indices, sorted_probs * (~sorted_indices_to_remove))
+        return filtered_probs
+
+    @staticmethod
+    def apply_repetition_penalty(logits: torch.Tensor, input_ids: torch.Tensor, penalty: float) -> torch.Tensor:
+        """Apply repetition penalty to logits based on input history."""
+        # Get score for each token that appears in the input_ids
+        score = torch.gather(logits, -1, input_ids)
+        
+        # Where score < 0, multiply by penalty; where score > 0, divide by penalty
+        score = torch.where(score < 0, score * penalty, score / penalty)
+        
+        # Put back the penalized scores into logits
+        logits.scatter_(-1, input_ids, score)
+        
+        return logits
 
     @torch.inference_mode()
-    def _get_logits(self, encodings: transformers.BatchEncoding) -> torch.Tensor:
-        observer_logits = self.observer_model(**encodings.to(DEVICE_1)).logits
-        performer_logits = self.performer_model(**encodings.to(DEVICE_2)).logits
-        if DEVICE_1 != "cpu":
-            torch.cuda.synchronize()
-        return observer_logits, performer_logits
+    def compute_telescope_one_forward(
+        self,
+        reference_text: str,
+        performer_model: AutoModelForCausalLM,
+        observer_model: AutoModelForCausalLM,
+        tokenizer: PreTrainedTokenizer,
+        device: torch.device,
+        temperature: float = .7,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None,
+        repetition_penalty: float = 2
+        ):
+       
+        reference_text_tokens = tokenizer(reference_text, return_tensors="pt").to(device).input_ids
+        performer_logits = performer_model(reference_text_tokens).logits.clone()
+        performer_logits = performer_logits.squeeze()
+        observer_logits = observer_model(reference_text_tokens).logits.clone()
+        observer_logits = observer_logits.squeeze()
+       
+        reference_text_tokens = reference_text_tokens.squeeze()
+       
+        NUMBER_OF_TOKENS_TO_SKIP = 0
+   
+        total_cross_entropy_cross_perplexity = 0
+        total_cross_entropy_normal_perplexity = 0
+       
+        for i in range(performer_logits.shape[0]):
+            if i < NUMBER_OF_TOKENS_TO_SKIP: continue
+           
+            performer_next_token_logits = performer_logits[i, :].reshape(1, -1)
+            observer_next_token_logits = observer_logits[i, :].reshape(1, -1)
 
-    def compute_score(self, input_text: Union[list[str], str]) -> Union[float, list[float]]:
+            # Apply repetition penalty
+            if repetition_penalty != 1.0:
+                performer_next_token_logits = self.apply_repetition_penalty(
+                    performer_next_token_logits, 
+                    reference_text_tokens[:i], 
+                    repetition_penalty
+                )
+                observer_next_token_logits = self.apply_repetition_penalty(
+                    observer_next_token_logits,
+                    reference_text_tokens[:i],
+                    repetition_penalty
+                )
+
+            # Apply sampling methods to both models' logits
+            if temperature != 1.0:
+                performer_next_token_logits = self.apply_temperature(performer_next_token_logits, temperature)
+                observer_next_token_logits = self.apply_temperature(observer_next_token_logits, temperature)
+
+            performer_next_tokens_logits_softmax = torch.softmax(performer_next_token_logits, dim=-1)
+            observer_next_token_logits_softmax = torch.softmax(observer_next_token_logits, dim=-1)
+
+            if top_k is not None:
+                performer_next_tokens_logits_softmax = self.apply_top_k(performer_next_tokens_logits_softmax, top_k)
+                observer_next_token_logits_softmax = self.apply_top_k(observer_next_token_logits_softmax, top_k)
+
+            if top_p is not None:
+                performer_next_tokens_logits_softmax = self.apply_top_p(performer_next_tokens_logits_softmax, top_p)
+                observer_next_token_logits_softmax = self.apply_top_p(observer_next_token_logits_softmax, top_p)
+
+            # Renormalize after filtering if needed
+            if top_k is not None or top_p is not None:
+                performer_next_tokens_logits_softmax = performer_next_tokens_logits_softmax / performer_next_tokens_logits_softmax.sum()
+                observer_next_token_logits_softmax = observer_next_token_logits_softmax / observer_next_token_logits_softmax.sum()
+           
+            total_cross_entropy_cross_perplexity -= torch.matmul(performer_next_tokens_logits_softmax, torch.log(observer_next_token_logits_softmax).T)
+            total_cross_entropy_normal_perplexity -= torch.log(performer_next_tokens_logits_softmax[:, reference_text_tokens[i]])
+       
+            del observer_next_token_logits_softmax
+            del performer_next_tokens_logits_softmax
+            del performer_next_token_logits
+            del observer_next_token_logits
+            torch.cuda.empty_cache()
+           
+        result = (total_cross_entropy_normal_perplexity / total_cross_entropy_cross_perplexity).to(torch.float32).cpu().numpy()
+        return float(result)
+
+    def compute_score(self, 
+                     input_text: Union[list[str], str],
+                     temperature: float = 1.0,
+                     top_k: Optional[int] = None,
+                     top_p: Optional[float] = None,
+                     repetition_penalty: float = 1.0
+                     ) -> Union[float, list[float]]:
         batch = [input_text] if isinstance(input_text, str) else input_text
-        encodings = self._tokenize(batch)
-        observer_logits, performer_logits = self._get_logits(encodings)
-        ppl = perplexity(encodings, performer_logits)
-        x_ppl = entropy(observer_logits.to(DEVICE_1), performer_logits.to(DEVICE_1),
-                        encodings.to(DEVICE_1), self.tokenizer.pad_token_id)
-        binoculars_scores = ppl / x_ppl
-        binoculars_scores = binoculars_scores.tolist()
-        return binoculars_scores[0] if isinstance(input_text, str) else binoculars_scores
+        scores = [self.compute_telescope_one_forward(
+            text,
+            self.performer_model,
+            self.observer_model,
+            self.tokenizer,
+            self.performer_model.device,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty
+        ) for text in batch]
+        return scores[0] if isinstance(input_text, str) else scores
 
-    def predict(self, input_text: Union[list[str], str]) -> Union[list[str], str]:
-        binoculars_scores = np.array(self.compute_score(input_text))
+    def predict(self, 
+                input_text: Union[list[str], str],
+                temperature: float = 1.0,
+                top_k: Optional[int] = None,
+                top_p: Optional[float] = None,
+                repetition_penalty: float = 1.0
+                ) -> Union[list[str], str]:
+        binoculars_scores = np.array(self.compute_score(
+            input_text,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty
+        ))
         pred = np.where(binoculars_scores < self.threshold,
                         "Most likely AI-generated",
                         "Most likely human-generated"
                         ).tolist()
-        return pred
+        return pred[0] if isinstance(input_text, str) else pred

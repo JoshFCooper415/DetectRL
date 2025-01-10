@@ -53,7 +53,7 @@ def experiment(args):
             text = item["text"]
             label = item["label"]
 
-            item["bino_score"] = -bino.compute_score(text)
+            item["bino_score"] = bino.compute_score(text)
 
             # result
             if label == "human":

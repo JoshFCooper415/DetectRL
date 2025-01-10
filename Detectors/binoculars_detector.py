@@ -30,7 +30,7 @@ def assert_tokenizer_consistency(model_id_1, model_id_2):
 
 class Binoculars(object):
     def __init__(self,
-                 observer_name_or_path: str = "HuggingFaceTB/SmolLM-1.7B",
+                 observer_name_or_path: str = "HuggingFaceTB/SmolLM-135M",
                  performer_name_or_path: str = "HuggingFaceTB/SmolLM-135M-Instruct",
                  use_bfloat16: bool = True,
                  max_token_observed: int = 512,
@@ -133,7 +133,7 @@ class Binoculars(object):
        
         reference_text_tokens = reference_text_tokens.squeeze()
        
-        NUMBER_OF_TOKENS_TO_SKIP = 0
+        NUMBER_OF_TOKENS_TO_SKIP = 10
    
         total_cross_entropy_cross_perplexity = 0
         total_cross_entropy_normal_perplexity = 0

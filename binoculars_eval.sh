@@ -7,11 +7,13 @@ python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Dat
 
 python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Direct_Prompt/direct_prompt_test.json
 
-python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Multi_Domain/multi_domains_arxiv_test.json, $Task1_path/Multi_Domain/multi_domains_writing_prompt_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_xsum_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_yelp_review_test.json
+python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Multi_Domain/multi_domains_arxiv_test.json,$Task1_path/Multi_Domain/multi_domains_writing_prompt_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_xsum_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_yelp_review_test.json
 #python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Multi_LLM/multi_llms_ChatGPT_test.json,$Task1_path/Multi_LLM/multi_llms_Claude-instant_test.json,$Task1_path/Multi_LLM/multi_llms_Google-PaLM_test.json,$Task1_path/Multi_LLM/multi_llms_Llama-2-70b_test.json,
 
 python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Paraphrase_Attacks/paraphrase_attacks_test.json,$Task1_path/perturbation_attacks_test.json,$Task1_path/data_mixing_test.json,
 
-
 python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Paraphrase_Attacks_Human/paraphrase_attacks_human_test.json,$Task1_path/Paraphrase_Attacks_Human/paraphrase_back_translation_human_test.json,$Task1_path/Paraphrase_Attacks_Human/paraphrase_dipper_human_test.json,$Task1_path/Paraphrase_Attacks_Human/paraphrase_polish_human_test.json
+
 python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Perturbation_Attacks/perturbation_attacks_llm_test.json,$Task1_path/Perturbation_Attacks/perturbation_character_llm_test.json,$Task1_path/Perturbation_Attacks/perturbation_sent_llm_test.json,$Task1_path/Perturbation_Attacks/perturbation_word_llm_test.json
+
+python Detectors/binoculars_detector.py --test_data_path Benchmark/Benchmark_Data/Data_Mixing/llm_centered_mixing_test.jsonS

@@ -1,0 +1,8 @@
+Detectors_path=Detectors
+
+Task1_path=Benchmark/Benchmark_Data
+
+
+python $Detectors_path/binoculars_eval_length.py --test_data_path $Task1_path/Multi_Domain/multi_domains_arxiv_test.json,$Task1_path/Multi_Domain/multi_domains_writing_prompt_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_xsum_test.json,Benchmark/Benchmark_Data/Multi_Domain/multi_domains_yelp_review_test.json
+
+#python $Detectors_path/binoculars_evaluation.py --test_data_path $Task1_path/Data_Mixing_Human/multi_human_mixing_test.json

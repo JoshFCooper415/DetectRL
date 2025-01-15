@@ -5,6 +5,8 @@ import tqdm
 import argparse
 import json
 from binoculars_detector import Binoculars
+#from bino_true import Binoculars
+#from flan_detect import Binoculars
 from metrics import get_roc_metrics
 import numpy as np
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, confusion_matrix, precision_score, recall_score, \

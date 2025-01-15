@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 
 def experiment(args):
-
+    print(args.methods)
     final_result = {}
     for method in args.methods:
         logging.info(f"Testing method {method}")
@@ -22,6 +22,7 @@ def experiment(args):
             "LRR": "text_LRR",
             "DetectGPT": "detectgpt_score",
             "Fast_DetectGPT": "text_crit",
+            "bino": "bino_score"
         }
 
         result_path = args.test_data_path.split(".json")[0] + f"_{method}_result.json"
@@ -34,7 +35,7 @@ def experiment(args):
                 optimal_threshold = result_data["100_perturbation"]["optimal_threshold"]
             else:
                 optimal_threshold = result_data["optimal_threshold"]
-
+        #optimal_threshold = 7.3
         filenames = args.transfer_data_path.split(",")
         method_result = {}
         for filename in filenames:
@@ -66,6 +67,7 @@ def experiment(args):
                     label = item["label"]
                     # result
                     if label == "human":
+                        #print(item)
                         predictions['human'].append(item[score_key[method]])
                     elif label == "llm":
                         predictions['llm'].append(item[score_key[method]])
@@ -108,7 +110,8 @@ if __name__ == '__main__':
     parser.add_argument('--transfer_data_path', type=str, required=True,
                         help="Path to the test data. could be several files with ','. "
                              "Note that the data should have been perturbed.")
-    parser.add_argument('--methods', default=["likelihood", "entropy", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast_DetectGPT"], type=list, required=False)
+    #parser.add_argument('--methods', default=["likelihood", "entropy", "rank", "logRank", "LRR", "NPR", "DetectGPT", "Fast_DetectGPT"], type=list, required=False)
+    parser.add_argument('--methods', default=["bino"], type=list, required=False)
     parser.add_argument('--DEVICE', default="cuda", type=str, required=False)
     parser.add_argument('--seed', default=2023, type=int, required=False)
     args = parser.parse_args()
